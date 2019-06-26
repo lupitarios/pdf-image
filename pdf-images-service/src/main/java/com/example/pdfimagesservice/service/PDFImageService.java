@@ -1,5 +1,6 @@
 package com.example.pdfimagesservice.service;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.pdfimagesservice.model.Image;
 import com.example.pdfimagesservice.model.PDFFile;
 
 @Service
@@ -41,7 +43,7 @@ public class PDFImageService {
 			
 			InputStream pdfStream = new ByteArrayInputStream(pdf.getBytes());
 			PDDocument docPDF = PDDocument.load(pdfStream);
-			List<PDImageXObject> lstImagesPDF = this.getImages(docPDF);
+			List<Image> lstImagesPDF = this.getImages(docPDF);
 			
 			
 			pdfFile.setPagesNumber(docPDF.getNumberOfPages());
@@ -75,10 +77,11 @@ public class PDFImageService {
 		return wordsNumber;
 	}
 	
-	private List<PDImageXObject> getImages(PDDocument docPDF){
-		List<PDImageXObject> lstImages = new ArrayList<PDImageXObject>();
+	private List<Image> getImages(PDDocument docPDF){
+		List<Image> lstImages = new ArrayList<Image>();
 		
 		PDPageTree list = docPDF.getPages();
+		int i = 0;
 		try {
 			
 			for(PDPage page : list) {
@@ -89,8 +92,10 @@ public class PDFImageService {
 					PDXObject xObj = pdResources.getXObject(name);
 					if(xObj instanceof PDImageXObject) {
 						PDImageXObject image = (PDImageXObject) xObj;
-						lstImages.add(image);
 						
+						Image img = new Image("PDF" + i, image.getStream().toByteArray());
+						lstImages.add(img);
+						i++;
 					}
 				}
 			}
