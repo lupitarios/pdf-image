@@ -1,54 +1,73 @@
 package com.example.pdfimagesservice.rest;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import com.example.pdfimagesservice.PdfImagesServiceApplicationTests;
+import com.example.pdfimagesservice.model.PDFFile;
+import com.example.pdfimagesservice.service.PDFImageService;
 
-public class PDFImageControllerTest extends PdfImagesServiceApplicationTests {
+@RunWith(SpringRunner.class)
+@WebMvcTest
+public class PDFImageControllerTest  {
 
-	private final String FILE_NAME = "Reason–May 2019.pdf";
+	private final String FILE_NAME = "Agile-Manifesto.pdf";
 	private final String FILE_PATH = "/Users/LupitaRios/Documents/DOCS/";
 	private File filePdf = new File(FILE_PATH + FILE_NAME );
 	
-	@Test
-	public void shouldReturnContent() throws Exception{
-				
-		MockMultipartFile multipartFile = new MockMultipartFile("file", filePdf.getName(), MediaType.APPLICATION_PDF.toString() ,Files.readAllBytes(Paths.get(filePdf.getPath())) ); 
+	@Autowired
+	protected MockMvc mockMvc;
+	
+	@Autowired
+	protected WebApplicationContext wac;
 
-		System.out.println(multipartFile.getName());
+	@MockBean
+	private PDFImageService pdfImageService;
+
+	@Before
+	public void setUp() {
+		//Mockito.reset(pdfImageServiceMock);
+		pdfImageService = new PDFImageService();
+		MockitoAnnotations.initMocks(this);
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
 		
-		/*
-		mockMvc.perform(get("/api-pdf")
-				.contentType(MediaType.MULTIPART_FORM_DATA)
-				.accept(MediaType.APPLICATION_PDF)
-				.requestAttr("file", multipartFile)
-				.param("file", FILE_NAME))
-				.andExpect(status().isOk());
-		*/
-		MvcResult result = mockMvc.perform(
-				MockMvcRequestBuilders.multipart("/api-pdf")
-				.file(multipartFile))
-				.andExpect(status().isOk())
-				.andReturn();
-		
-		String content = result.getResponse().getContentAsString();
-		System.out.println(" shouldReturnContent RESPONSE MVC -> " + content);
 	}
+
 	
 	@Test
 	public void shouldReturnImages() throws Exception{
 		
-		MockMultipartFile multipartFile = new MockMultipartFile("file", filePdf.getName(), MediaType.APPLICATION_PDF.toString() ,Files.readAllBytes(Paths.get(filePdf.getPath())) ); 
+		byte[] pArray = Files.readAllBytes(Paths.get(filePdf.getPath()));
+		
+		MockMultipartFile multipartFile = new MockMultipartFile("file", filePdf.getName(), MediaType.APPLICATION_PDF.toString() , pArray); 
+		Optional optPDF = pdfImageService.getContentFromPDF(multipartFile);
+		if(optPDF.isPresent()) {
+			PDFFile pdfContent = (PDFFile) optPDF.get();
+			System.out.println("PDF CONTENT  " + pdfContent);
+		}
 		
 		MvcResult result = mockMvc.perform(
 				MockMvcRequestBuilders.multipart("/api-pdf/images")

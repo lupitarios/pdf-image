@@ -1,5 +1,6 @@
 package com.example.pdfimagesservice.rest;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,35 +32,36 @@ public class PDFImageController {
 	}
 	
 	
-	@PostMapping("/api-pdf")
-	public ResponseEntity<String> getContentPDF(@NotNull @RequestParam("file") MultipartFile multipartFile){
-		
-		Optional<String> resultService = pdfimageService.getContentPDF(multipartFile);
-		
-		if(!resultService.isPresent()) {
-			return ResponseEntity.notFound().build();
-		}
-		
-		return ResponseEntity.ok(resultService.get());
-	}
-	
-	
 	@PostMapping("/api-pdf/images")
-	public ResponseEntity<List<PDFFile>> getImagesPDF(@NotNull @RequestParam("file") MultipartFile multipartFile){
+	public ResponseEntity<PDFFile> getImagesPDF(@NotNull @RequestParam("file") MultipartFile multipartFile){
+		
+		System.out.println("getContentType->"+multipartFile.getContentType());
+		System.out.println("getName->"+multipartFile.getName());
+		System.out.println("getOriginalFilename->"+multipartFile.getOriginalFilename());
+		System.out.println("getSize->"+multipartFile.getSize());
+		
+		try {
+			System.out.println("getContentType Size ->"+multipartFile.getBytes().length);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		System.out.println("getImagesPDF IN");
-		List<PDFFile> resultService = pdfimageService.getImageFromPDF(multipartFile);
 		
-		System.out.println("getImagesPDF MIDDLE");
+		Optional optPDF = pdfimageService.getContentFromPDF(multipartFile);
 		
-		if(resultService.isEmpty()) {
-			System.out.println("getImagesPDF EMPTY");
-			return ResponseEntity.notFound().build();
+		if(optPDF.isPresent()) {
+			PDFFile resultService = (PDFFile) optPDF.get();
+		
+			System.out.println("getImagesPDF MIDDLE");
+			
+			System.out.println("getImagesPDF END service content ->" + resultService);
+			return ResponseEntity.ok(resultService);
 		}
 		
-		System.out.println("getImagesPDF END");
-		return ResponseEntity.ok(resultService);
-		
+		System.out.println("getImagesPDF SERVICE List EMPTY");
+		return ResponseEntity.notFound().build();
 	}
 	
 	

@@ -1,5 +1,9 @@
 package com.example.pdfimagesservice.model;
 
+import java.util.List;
+
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+
 public class PDFFile {
 
 	private String name;
@@ -8,15 +12,15 @@ public class PDFFile {
 	private int pagesNumber;
 	private int imagesNumber;
 	private int wordsNumber;
+	private List<PDImageXObject> images;
 	
 	
 	public PDFFile() {
 		super();
 	}
 
-	
-	
-	public PDFFile(String name, String contentType, byte[] data, int pagesNumber, int imagesNumber, int wordsNumber) {
+	public PDFFile(String name, String contentType, byte[] data, int pagesNumber, int imagesNumber, int wordsNumber,
+			List<PDImageXObject> images) {
 		super();
 		this.name = name;
 		this.contentType = contentType;
@@ -24,7 +28,11 @@ public class PDFFile {
 		this.pagesNumber = pagesNumber;
 		this.imagesNumber = imagesNumber;
 		this.wordsNumber = wordsNumber;
+		this.images = images;
 	}
+
+
+
 
 
 	public String getName() {
@@ -69,7 +77,14 @@ public class PDFFile {
 	public void setWordsNumber(int wordsNumber) {
 		this.wordsNumber = wordsNumber;
 	}
-	
+
+	public List<PDImageXObject> getImages() {
+		return images;
+	}
+
+	public void setImages(List<PDImageXObject> images) {
+		this.images = images;
+	}
 	
 	
 }
