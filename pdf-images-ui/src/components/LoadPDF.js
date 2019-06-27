@@ -8,12 +8,14 @@ export class LoadPDF extends Component {
         this.state = {
             file: '',
             error: '',
-            msg: ''
+            msg: '',
+            pages : 0,
+            imagesNumber : 0,
+            wordsNumber : 0,
+            images : []
         }
         this.isHidden = true;
-        this.pages = 0;
-        this.imagesNumber = 0;
-        this.wordsNumber = 0;
+        
     }
 
     onFileChange = (event) => {
@@ -43,15 +45,23 @@ export class LoadPDF extends Component {
         fetch('http://localhost:8081/api-pdf/images',{
             method: 'POST',
             body: data
-        }).then(response =>  {
-            var data = response.json();
+        }).then(response =>  { return response.json();})
+        .then(responseData =>{ 
+            console.log(responseData);
+            console.log("pagesNumber->"+responseData.pagesNumber);
+            this.setState({ 
+                error:'', 
+                msg: 'Sucessfully uploaded file', 
+                wordsNumber : responseData.wordsNumber,
+                pages : responseData.pagesNumber,
+                imagesNumber : responseData.imagesNumber,
+                images : responseData.images
+            });
             
-            console.log("data -> " + data);
-            this.setState({ error:'', msg: 'Sucessfully uploaded file' });
-            this.wordsNumber = data.wordsNumber;
-            this.pages = data.pagesNumber;
             this.isHidden = false;
-        }).catch(err => {
+            return responseData;
+        })
+       .catch(err => {
             this.setState({ error: err });
             alert("error"+ err);
         });
@@ -75,12 +85,18 @@ export class LoadPDF extends Component {
                
                 <div className="panel" hidden={this.isHidden}>
                     <br />
-                    <label className="label-sentences">Words Number: {this.wordsNumber} </label><br />
-                    <label className="label-sentences">Images Number:{this.imagesNumber}</label><br />
-                    <label className="label-sentences">Pages:{this.pages}</label><br />
+                    <label className="label-sentences">Words Number: {this.state.wordsNumber} </label><br />
+                    <label className="label-sentences">Images Number:{this.state.imagesNumber}</label><br />
+                    <label className="label-sentences">Pages:{this.state.pages}</label><br />
                 </div>
             </div>
-            <div className="right"></div>
+            <div className="right">
+                {
+                    this.state.images.map(image => (
+                        <img src="{`data:image/jpeg;base64,${image.data}`} "/>
+                    ))
+                }
+            </div>
         </div>
     )
   }
